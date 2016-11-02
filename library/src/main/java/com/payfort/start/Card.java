@@ -7,7 +7,7 @@ import java.util.EnumSet;
 import java.util.regex.Pattern;
 
 /**
- * A representation of plastic card.
+ * A representation of plastic card. It let developer validate card details and show errors on payment form.
  */
 public class Card {
 

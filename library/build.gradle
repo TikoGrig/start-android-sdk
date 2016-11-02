@@ -4,7 +4,7 @@ android {
     compileSdkVersion 25
     buildToolsVersion '25.0.0'
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 16    // TLS 1.2 is supported in android 4.1+
         targetSdkVersion 25
         versionCode 1
         versionName '0.1'
