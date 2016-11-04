@@ -1,9 +1,16 @@
 package com.payfort.start;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.util.DisplayMetrics;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import com.payfort.start.error.StartApiException;
 import com.payfort.start.web.RetrofitUtils;
@@ -21,6 +28,7 @@ import static com.payfort.start.util.Preconditions.checkNotNull;
 import static com.payfort.start.util.Preconditions.checkState;
 import static com.payfort.start.web.RetrofitUtils.enqueueWithCondition;
 import static com.payfort.start.web.RetrofitUtils.enqueueWithRetry;
+import static com.payfort.start.web.RetrofitUtils.getRawErrorBody;
 
 /**
  * A class for creation card {@link Token}.
@@ -30,6 +38,7 @@ public class Start {
 
     private static final int MAX_REQUEST_ATTEMPTS = 4;
     private static final long RETRY_DELAY_MS = 2000;
+    private static final double WEB_VIEW_SCREEN_PERCENTS = 0.8f;
     private final StartApi startApi;
 
     /**
@@ -63,7 +72,7 @@ public class Start {
 
         TokenRequest tokenRequest = new TokenRequest(activity, tokenCallback, amountInCents, currency);
         Call<Token> tokenCall = startApi.createToken(card.number, card.cvc, card.expirationMonth, card.expirationYear, card.owner);
-        enqueueWithRetry(tokenCall, new NewTokenCallback(tokenRequest), MAX_REQUEST_ATTEMPTS);
+        enqueueWithRetry(tokenCall, new CreateTokenCallback(tokenRequest), MAX_REQUEST_ATTEMPTS, RETRY_DELAY_MS);
     }
 
     private void onTokenCreated(TokenRequest tokenRequest, Token token) {
@@ -76,7 +85,7 @@ public class Start {
 
     private void processTokenVerification(TokenRequest tokenRequest, Token token) {
         Call<TokenVerification> call = startApi.createTokenVerification(token.getId(), tokenRequest.amountInCents, tokenRequest.currency);
-        enqueueWithRetry(call, new CreateTokenVerificationCallback(tokenRequest, token), MAX_REQUEST_ATTEMPTS);
+        enqueueWithRetry(call, new CreateTokenVerificationCallback(tokenRequest, token), MAX_REQUEST_ATTEMPTS, RETRY_DELAY_MS);
     }
 
     private void onTokenVerificationCreated(TokenRequest tokenRequest, TokenVerification tokenVerification, Token token) {
@@ -88,21 +97,43 @@ public class Start {
     }
 
     private void verifyTokenInBrowser(TokenRequest tokenRequest, Token token) {
+        Toast.makeText(tokenRequest.context, "Your bank requires additional verification", Toast.LENGTH_LONG).show();
+
         Call<TokenVerification> call = startApi.getTokenVerification(token.getId());
 
         String url = String.format(Locale.US, "%stokens/%s/verification/verify", StartApiFactory.BASE_URL, token.getId());
-        Dialog verificationDialog = new VerificationWebViewDialog(tokenRequest.context, url, new VerificationDialogCallback(call, tokenRequest));
-        verificationDialog.show();
+        Dialog verificationDialog = showVerificationDialog(tokenRequest, url, new VerificationDialogCancelListener(call, tokenRequest));
 
         CheckTokenVerificationCallback verificationCallback = new CheckTokenVerificationCallback(tokenRequest, token, verificationDialog);
         enqueueWithCondition(call, verificationCallback, new VerificationStatusRetryCondition(), RETRY_DELAY_MS);
     }
 
-    private final class NewTokenCallback implements Callback<Token> {
+    private Dialog showVerificationDialog(TokenRequest tokenRequest, String url, DialogInterface.OnCancelListener onCancelListener) {
+        LayoutInflater layoutInflater = LayoutInflater.from(tokenRequest.context);
+        View view = layoutInflater.inflate(R.layout.web_dialog, null);
+        DisplayMetrics displayMetrics = tokenRequest.context.getResources().getDisplayMetrics();
+        view.setMinimumHeight((int) (displayMetrics.heightPixels * WEB_VIEW_SCREEN_PERCENTS));
+        view.setMinimumWidth((int) (displayMetrics.widthPixels * WEB_VIEW_SCREEN_PERCENTS));
+
+        WebView webView = (WebView) view.findViewById(R.id.webView);
+        webView.setWebViewClient(new WebViewClient());
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.loadUrl(url);
+
+        Dialog dialog = new AlertDialog.Builder(tokenRequest.context)
+                .setView(view)
+                .setOnCancelListener(onCancelListener)
+                .create();
+        dialog.show();
+
+        return dialog;
+    }
+
+    private final class CreateTokenCallback implements Callback<Token> {
 
         private final TokenRequest tokenRequest;
 
-        private NewTokenCallback(TokenRequest tokenRequest) {
+        private CreateTokenCallback(TokenRequest tokenRequest) {
             this.tokenRequest = tokenRequest;
         }
 
@@ -112,13 +143,14 @@ public class Start {
                 Token token = response.body();
                 onTokenCreated(tokenRequest, token);
             } else {
-                tokenRequest.tokenCallback.onError(new StartApiException("Error creating new token. Response code is " + response.code()));
+                String error = String.format(Locale.US, "Request to create new token failed. Code: `%s`, response: `%s`", response.code(), getRawErrorBody(response));
+                tokenRequest.tokenCallback.onError(new StartApiException(error));
             }
         }
 
         @Override
         public void onFailure(Throwable t) {
-            tokenRequest.tokenCallback.onError(new StartApiException(t));
+            tokenRequest.tokenCallback.onError(new StartApiException("Request to create new token failed", t));
         }
     }
 
@@ -134,15 +166,18 @@ public class Start {
 
         @Override
         public void onResponse(Response<TokenVerification> response) {
-            checkState(response.isSuccess(), "Response isn't successful");
-            checkState(response.body().isFinalized(), "Token is not finalized!");
-
-            tokenRequest.tokenCallback.onSuccess(token);
+            if (response.isSuccess()) {
+                TokenVerification tokenVerification = response.body();
+                onTokenVerificationCreated(tokenRequest, tokenVerification, token);
+            } else {
+                String error = String.format(Locale.US, "Request to create new token verification failed. Code: `%s`, response: `%s`", response.code(), getRawErrorBody(response));
+                tokenRequest.tokenCallback.onError(new StartApiException(error));
+            }
         }
 
         @Override
         public void onFailure(Throwable t) {
-            throw new IllegalStateException("Should not be called! Request can be canceled or be successful");
+            tokenRequest.tokenCallback.onError(new StartApiException("Request to create new token verification failed", t));
         }
     }
 
@@ -160,18 +195,16 @@ public class Start {
 
         @Override
         public void onResponse(Response<TokenVerification> response) {
-            if (response.isSuccess()) {
-                verificationDialog.dismiss();
-                TokenVerification tokenVerification = response.body();
-                onTokenVerificationCreated(tokenRequest, tokenVerification, token);
-            } else {
-                tokenRequest.tokenCallback.onError(new StartApiException("Error verifying token. Response code is " + response.code()));
-            }
+            checkState(response.isSuccess(), "Response isn't successful");
+            checkState(response.body().isFinalized(), "Token is not finalized!");
+
+            verificationDialog.dismiss();
+            tokenRequest.tokenCallback.onSuccess(token);
         }
 
         @Override
         public void onFailure(Throwable t) {
-            tokenRequest.tokenCallback.onError(new StartApiException(t));
+            throw new IllegalStateException("Should not be called! Request can be canceled or be successful");
         }
     }
 
@@ -183,18 +216,18 @@ public class Start {
         }
     }
 
-    private final class VerificationDialogCallback implements VerificationWebViewDialog.Callback {
+    private final class VerificationDialogCancelListener implements DialogInterface.OnCancelListener {
 
         private final Call<TokenVerification> call;
         private final TokenRequest tokenRequest;
 
-        private VerificationDialogCallback(Call<TokenVerification> call, TokenRequest tokenRequest) {
+        private VerificationDialogCancelListener(Call<TokenVerification> call, TokenRequest tokenRequest) {
             this.call = call;
             this.tokenRequest = tokenRequest;
         }
 
         @Override
-        public void onDialogCanceled() {
+        public void onCancel(DialogInterface dialogInterface) {
             call.cancel();
             tokenRequest.tokenCallback.onCancel();
         }

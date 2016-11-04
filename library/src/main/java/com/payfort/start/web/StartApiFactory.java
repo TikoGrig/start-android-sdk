@@ -2,6 +2,9 @@ package com.payfort.start.web;
 
 import android.os.Build;
 
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.payfort.start.BuildConfig;
 
 import java.io.IOException;
@@ -33,8 +36,14 @@ public class StartApiFactory {
         return new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .client(newClient(apiKey))
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(newGson()))
                 .build().create(StartApi.class);
+    }
+
+    public static Gson newGson() {
+        return new GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .create();
     }
 
     private static OkHttpClient newClient(String apiKey) {
