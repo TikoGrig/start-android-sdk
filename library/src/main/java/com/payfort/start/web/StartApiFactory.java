@@ -2,8 +2,11 @@ package com.payfort.start.web;
 
 import android.os.Build;
 
+import com.payfort.start.BuildConfig;
+
 import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.ConnectionSpec;
 import okhttp3.Credentials;
@@ -35,9 +38,11 @@ public class StartApiFactory {
     }
 
     private static OkHttpClient newClient(String apiKey) {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.addInterceptor(new HeadersInterceptor(apiKey));
-        builder.addInterceptor(new HttpLoggingInterceptor().setLevel(BODY));
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .addInterceptor(new HeadersInterceptor(apiKey))
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(15, TimeUnit.SECONDS)
+                .addInterceptor(new HttpLoggingInterceptor().setLevel(BODY));
         enableTls12(builder);
         return builder.build();
     }
@@ -65,6 +70,7 @@ public class StartApiFactory {
         public Response intercept(Chain chain) throws IOException {
             Request original = chain.request();
             Request.Builder builder = original.newBuilder();
+            builder.header("User-Agent", "StartAndroid " + BuildConfig.VERSION_NAME);
             builder.header("Authorization", Credentials.basic(apiKey, ""));
             Request request = builder.build();
             return chain.proceed(request);
