@@ -1,5 +1,8 @@
 package com.payfort.start;
 
+import com.payfort.start.error.CardVerificationException;
+import com.payfort.start.test.BuildConfig;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,13 +28,16 @@ public class CardTest {
     private static final String VALID_NUMBER = "4111111111111111";
 
     @Test
-    public void testNumberValidation() throws Exception {
+    public void testInvalidNumber() throws Exception {
         assertHasSingleError(NUMBER, "4111111111111112", "111", 1, 2020, "John Doe");
         assertHasSingleError(NUMBER, "1", "111", 1, 2020, "John Doe");
         assertHasSingleError(NUMBER, "a", "111", 1, 2020, "John Doe");
         assertHasSingleError(NUMBER, null, "111", 1, 2020, "John Doe");
         assertHasSingleError(NUMBER, "a111111111111111", "111", 1, 2020, "John Doe");
+    }
 
+    @Test
+    public void testValidNumber() throws Exception {
         // https://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
         new Card("378 2822 4631 0005", "111", 1, 2020, "John Doe");
         new Card("3714-4963-5398-43-1", "111", 1, 2020, "John Doe");
@@ -53,14 +59,17 @@ public class CardTest {
     }
 
     @Test
-    public void testCvcValidation() throws Exception {
+    public void testInvalidCvc() throws Exception {
         assertHasSingleError(CVC, VALID_NUMBER, null, 1, 2020, "John Doe");
         assertHasSingleError(CVC, VALID_NUMBER, "", 1, 2020, "John Doe");
         assertHasSingleError(CVC, VALID_NUMBER, "11", 1, 2020, "John Doe");
         assertHasSingleError(CVC, VALID_NUMBER, "12345", 1, 2020, "John Doe");
         assertHasSingleError(CVC, VALID_NUMBER, "12q", 1, 2020, "John Doe");
         assertHasSingleError(CVC, VALID_NUMBER, "z123 ", 1, 2020, "John Doe");
+    }
 
+    @Test
+    public void testValidCvc() throws Exception {
         new Card(VALID_NUMBER, "123", 1, 2020, "John Doe");
         new Card(VALID_NUMBER, "7890", 1, 2020, "John Doe");
         new Card(VALID_NUMBER, " 123 ", 1, 2020, "John Doe");
@@ -69,7 +78,7 @@ public class CardTest {
     }
 
     @Test
-    public void testExpirationDateValidation() throws Exception {
+    public void testInvalidExpirationDate() throws Exception {
         Calendar calendar = Calendar.getInstance();
         int currentYear = calendar.get(Calendar.YEAR);
         int currentMonth = calendar.get(Calendar.MONTH) + 1;
@@ -79,6 +88,13 @@ public class CardTest {
         assertHasSingleError(EXPIRATION_MONTH, VALID_NUMBER, "111", 0, currentYear, "John Doe");
         assertHasSingleError(EXPIRATION_MONTH, VALID_NUMBER, "111", 13, currentYear, "John Doe");
         assertHasSingleError(EXPIRATION_MONTH, VALID_NUMBER, "111", currentMonth - 1, currentYear, "John Doe");
+    }
+
+    @Test
+    public void testValidExpirationDate() throws Exception {
+        Calendar calendar = Calendar.getInstance();
+        int currentYear = calendar.get(Calendar.YEAR);
+        int currentMonth = calendar.get(Calendar.MONTH) + 1;
 
         new Card(VALID_NUMBER, "123", 1, 2020, "John Doe");
         new Card(VALID_NUMBER, "123", currentMonth, currentYear, "John Doe");
@@ -86,7 +102,7 @@ public class CardTest {
     }
 
     @Test
-    public void testOwnerValidation() throws Exception {
+    public void testInvalidOwner() throws Exception {
         assertHasSingleError(OWNER, VALID_NUMBER, "111", 1, 2020, null);
         assertHasSingleError(OWNER, VALID_NUMBER, "111", 1, 2020, "");
         assertHasSingleError(OWNER, VALID_NUMBER, "111", 1, 2020, "\t");
@@ -94,7 +110,10 @@ public class CardTest {
         assertHasSingleError(OWNER, VALID_NUMBER, "111", 1, 2020, "\n");
         assertHasSingleError(OWNER, VALID_NUMBER, "111", 1, 2020, "\r");
         assertHasSingleError(OWNER, VALID_NUMBER, "111", 1, 2020, " \t\n\r");
+    }
 
+    @Test
+    public void testValidOwner() throws Exception {
         new Card(VALID_NUMBER, "123", 1, 2020, "John Doe");
         new Card(VALID_NUMBER, "123", 1, 2020, "A");
         new Card(VALID_NUMBER, "123", 1, 2020, " A");

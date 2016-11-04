@@ -1,5 +1,7 @@
 package com.payfort.start;
 
+import com.payfort.start.error.StartApiException;
+
 /**
  * Callback for asynchronous work with {@link Start}.
  */
@@ -17,7 +19,7 @@ public interface TokenCallback {
      *
      * @param error an error occurred during receiving token from API
      */
-    void onError(Exception error);
+    void onError(StartApiException error);
 
     /**
      * To be called if user canceled token receiving process.

@@ -1,4 +1,4 @@
-package com.payfort.start;
+package com.payfort.start.util;
 
 /**
  * Static convenience methods that help a method or constructor check whether it was invoked
@@ -9,7 +9,7 @@ package com.payfort.start;
  * which helps the calling method communicate to <i>its</i> caller that <i>that</i> caller has made
  * a mistake.
  */
-final class Preconditions {
+public final class Preconditions {
 
     public static <T> T checkNotNull(T reference) {
         if (reference == null) {
@@ -33,15 +33,21 @@ final class Preconditions {
         return reference;
     }
 
-    static void checkArgument(boolean expression) {
+    public static void checkArgument(boolean expression) {
         if (!expression) {
             throw new IllegalArgumentException();
         }
     }
 
-    static void checkArgument(boolean expression, String errorMessage) {
+    public static void checkArgument(boolean expression, String errorMessage) {
         if (!expression) {
             throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
+    public static void checkState(boolean expression, String errorMessage) {
+        if (!expression) {
+            throw new IllegalStateException(errorMessage);
         }
     }
 }

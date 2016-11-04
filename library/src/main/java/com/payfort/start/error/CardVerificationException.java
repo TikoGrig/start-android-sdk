@@ -1,4 +1,6 @@
-package com.payfort.start;
+package com.payfort.start.error;
+
+import com.payfort.start.Card;
 
 import java.util.EnumSet;
 

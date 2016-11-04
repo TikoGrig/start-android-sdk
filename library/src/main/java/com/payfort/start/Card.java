@@ -2,6 +2,8 @@ package com.payfort.start;
 
 import android.text.TextUtils;
 
+import com.payfort.start.error.CardVerificationException;
+
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.regex.Pattern;
