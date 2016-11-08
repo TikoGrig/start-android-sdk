@@ -35,7 +35,7 @@ public class StartApiTest {
     public void testCreateNewToken() throws Exception {
         Call<Token> tokenCall = startApi.createToken("4242424242424242", "123", 11, 2016, "John Doe");
         Response<Token> tokenResponse = tokenCall.execute();
-        assertTrue(tokenResponse.isSuccess());
+        assertTrue(tokenResponse.isSuccessful());
         assertNotNull(tokenResponse.body().getId());
     }
 }

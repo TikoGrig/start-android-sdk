@@ -146,8 +146,8 @@ public class Start {
         }
 
         @Override
-        public void onResponse(Response<Token> response) {
-            if (response.isSuccess()) {
+        public void onResponse(Call<Token> call, Response<Token> response) {
+            if (response.isSuccessful()) {
                 Token token = response.body();
                 onTokenCreated(tokenRequest, token);
             } else {
@@ -157,7 +157,7 @@ public class Start {
         }
 
         @Override
-        public void onFailure(Throwable t) {
+        public void onFailure(Call<Token> call, Throwable t) {
             tokenRequest.tokenCallback.onError(new StartApiException("Request to create new token failed", t));
         }
     }
@@ -173,8 +173,8 @@ public class Start {
         }
 
         @Override
-        public void onResponse(Response<TokenVerification> response) {
-            if (response.isSuccess()) {
+        public void onResponse(Call<TokenVerification> call, Response<TokenVerification> response) {
+            if (response.isSuccessful()) {
                 TokenVerification tokenVerification = response.body();
                 onTokenVerificationCreated(tokenRequest, tokenVerification, token);
             } else {
@@ -184,7 +184,7 @@ public class Start {
         }
 
         @Override
-        public void onFailure(Throwable t) {
+        public void onFailure(Call<TokenVerification> call, Throwable t) {
             tokenRequest.tokenCallback.onError(new StartApiException("Request to create new token verification failed", t));
         }
     }
@@ -202,8 +202,8 @@ public class Start {
         }
 
         @Override
-        public void onResponse(Response<TokenVerification> response) {
-            checkState(response.isSuccess(), "Response isn't successful");
+        public void onResponse(Call<TokenVerification> call, Response<TokenVerification> response) {
+            checkState(response.isSuccessful(), "Response isn't successful");
             checkState(response.body().isFinalized(), "Token is not finalized!");
 
             verificationDialog.dismiss();
@@ -211,7 +211,7 @@ public class Start {
         }
 
         @Override
-        public void onFailure(Throwable t) {
+        public void onFailure(Call<TokenVerification> call, Throwable t) {
             throw new IllegalStateException("Should not be called! Request can be canceled or be successful");
         }
     }

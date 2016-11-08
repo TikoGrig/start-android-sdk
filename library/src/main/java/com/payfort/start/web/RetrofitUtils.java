@@ -34,7 +34,7 @@ public class RetrofitUtils {
         checkArgument(maxAttempts > 0, "MaxAttempts must be positive!");
         checkArgument(delayMillis >= 0, "Delay must be zero or positive!");
 
-        call.enqueue(new CallbackWithRetryWrapper<>(call, callback, maxAttempts, delayMillis));
+        call.enqueue(new CallbackWithRetryWrapper<>(callback, maxAttempts, delayMillis));
     }
 
     /**
@@ -50,7 +50,7 @@ public class RetrofitUtils {
         checkAllNotNull(call, callback, retryCondition);
         checkArgument(delayMillis >= 0, "Delay must be zero or positive!");
 
-        call.enqueue(new CallbackWithConditionWrapper<>(call, callback, retryCondition, delayMillis));
+        call.enqueue(new CallbackWithConditionWrapper<>(callback, retryCondition, delayMillis));
     }
 
     /**
@@ -74,14 +74,12 @@ public class RetrofitUtils {
     private static class CallbackWithRetryWrapper<T> implements Callback<T> {
 
         private final int attempts;
-        private final Call<T> call;
         private final Callback<T> callback;
         private final long delayMillis;
         private final Handler handler;
         private int retryCount = 0;
 
-        private CallbackWithRetryWrapper(Call<T> call, Callback<T> callback, int attempts, long delayMillis) {
-            this.call = checkNotNull(call);
+        private CallbackWithRetryWrapper(Callback<T> callback, int attempts, long delayMillis) {
             this.callback = checkNotNull(callback);
             checkArgument(attempts > 0);
             this.attempts = attempts;
@@ -90,31 +88,31 @@ public class RetrofitUtils {
         }
 
         @Override
-        public void onResponse(Response<T> response) {
-            callback.onResponse(response);
+        public void onResponse(Call<T> call, Response<T> response) {
+            callback.onResponse(call, response);
         }
 
         @Override
-        public void onFailure(Throwable t) {
+        public void onFailure(Call<T> call, Throwable t) {
             if (retryCount++ < attempts) {
-                scheduleRetry();
+                scheduleRetry(call);
             } else {
-                callback.onFailure(t);
+                callback.onFailure(call, t);
             }
         }
 
-        private void retry() {
+        private void retry(Call<T> call) {
             if (!call.isCanceled()) {
                 call.clone().enqueue(this);
             }
         }
 
-        protected void scheduleRetry() {
+        protected void scheduleRetry(final Call<T> call) {
             handler.postDelayed(new Runnable() {
 
                 @Override
                 public void run() {
-                    retry();
+                    retry(call);
                 }
             }, delayMillis);
         }
@@ -124,28 +122,28 @@ public class RetrofitUtils {
 
         private final RetryCondition<T> retryCondition;
 
-        private CallbackWithConditionWrapper(Call<T> call, Callback<T> callback, RetryCondition<T> retryCondition, long delayMillis) {
-            super(call, callback, Integer.MAX_VALUE, delayMillis);
+        private CallbackWithConditionWrapper(Callback<T> callback, RetryCondition<T> retryCondition, long delayMillis) {
+            super(callback, Integer.MAX_VALUE, delayMillis);
             this.retryCondition = retryCondition;
         }
 
         @Override
-        public void onResponse(Response<T> response) {
-            if (response.isSuccess()) {
+        public void onResponse(Call<T> call, Response<T> response) {
+            if (response.isSuccessful()) {
                 T body = response.body();
                 if (retryCondition.doRetry(body)) {
-                    scheduleRetry();
+                    scheduleRetry(call);
                 } else {
-                    super.onResponse(response);
+                    super.onResponse(call, response);
                 }
             } else {
-                scheduleRetry();
+                scheduleRetry(call);
             }
         }
 
         @Override
-        public void onFailure(Throwable t) {
-            scheduleRetry();
+        public void onFailure(Call<T> call, Throwable t) {
+            scheduleRetry(call);
         }
 
     }
