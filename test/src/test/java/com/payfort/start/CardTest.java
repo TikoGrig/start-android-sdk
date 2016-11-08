@@ -6,7 +6,7 @@ import com.payfort.start.test.BuildConfig;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.util.Calendar;
@@ -22,8 +22,8 @@ import static org.junit.Assert.assertEquals;
 /**
  * Test for {@link Card} class.
  */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 21)
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = 23)
 public class CardTest {
 
     private static final String VALID_NUMBER = "4111111111111111";

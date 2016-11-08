@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import static com.payfort.start.StartApiTest.TEST_OPEN_KEY;
@@ -17,8 +17,8 @@ import static com.payfort.start.StartApiTest.TEST_OPEN_KEY;
 /**
  * Test for {@link Start} class.
  */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 21)
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = 23)
 public class StartTest {
 
     private Start start;

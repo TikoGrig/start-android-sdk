@@ -14,7 +14,8 @@ android {
 dependencies {
     compile project(':library')
     testCompile 'junit:junit:4.12'
-    testCompile 'org.robolectric:robolectric:3.1'
+    testCompile 'org.robolectric:robolectric:3.1.4'
     testCompile 'com.squareup:fest-android:1.0.0'
     testCompile 'org.mockito:mockito-all:1.9.5'
+    testCompile 'org.khronos:opengl-api:gl1.1-android-2.1_r1' // to fix https://github.com/robolectric/robolectric/issues/1932
 }
