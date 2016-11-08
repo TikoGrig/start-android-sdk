@@ -45,7 +45,7 @@ public class Start {
 
     /**
      * Constructs new instance using api key.
-     * This <a href="https://docs.start.payfort.com/guides/api_keys/#how-to-get-api-keys">instruction</> tells how to get API keys for SDK.
+     * This <a href="https://docs.start.payfort.com/guides/api_keys/#how-to-get-api-keys">instruction</a> tells how to get API keys for SDK.
      *
      * @param apiKey a api key to be used for communication with API
      * @throws NullPointerException if api key is {@code null}
