@@ -165,7 +165,7 @@ public class CardTest {
             new Card(number, cvc, month, year, owner);
             Assert.fail();
         } catch (CardVerificationException e) {
-            Assert.assertEquals(invalidFields, e.getErrors());
+            Assert.assertEquals(invalidFields, e.getErrorFields());
         }
     }
 

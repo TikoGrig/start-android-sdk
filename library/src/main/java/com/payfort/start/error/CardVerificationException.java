@@ -37,7 +37,7 @@ public class CardVerificationException extends Exception {
      *
      * @return a set of invalid fields.
      */
-    public EnumSet<Card.Field> getErrors() {
+    public EnumSet<Card.Field> getErrorFields() {
         return invalidFields.clone();
     }
 
