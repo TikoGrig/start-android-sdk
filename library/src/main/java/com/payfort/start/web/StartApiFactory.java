@@ -21,8 +21,6 @@ import okhttp3.TlsVersion;
 import retrofit2.GsonConverterFactory;
 import retrofit2.Retrofit;
 
-import static com.payfort.start.web.HttpLoggingInterceptor.Level.BODY;
-
 /**
  * Factory for creating {@link StartApi} instances.
  *
@@ -40,7 +38,7 @@ public class StartApiFactory {
                 .build().create(StartApi.class);
     }
 
-    public static Gson newGson() {
+    private static Gson newGson() {
         return new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .create();
@@ -48,10 +46,10 @@ public class StartApiFactory {
 
     private static OkHttpClient newClient(String apiKey) {
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
-                .addInterceptor(new HeadersInterceptor(apiKey))
                 .connectTimeout(5, TimeUnit.SECONDS)
                 .readTimeout(15, TimeUnit.SECONDS)
-                .addInterceptor(new HttpLoggingInterceptor().setLevel(BODY));
+                //.addInterceptor(new HttpLoggingInterceptor().setLevel(BODY))
+                .addInterceptor(new HeadersInterceptor(apiKey));
         enableTls12(builder);
         return builder.build();
     }

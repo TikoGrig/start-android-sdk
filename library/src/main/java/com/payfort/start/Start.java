@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,7 @@ import com.payfort.start.web.RetrofitUtils;
 import com.payfort.start.web.StartApi;
 import com.payfort.start.web.StartApiFactory;
 
+import java.lang.ref.WeakReference;
 import java.util.Locale;
 
 import retrofit2.Call;
@@ -97,21 +99,24 @@ public class Start {
     }
 
     private void verifyTokenInBrowser(TokenRequest tokenRequest, Token token) {
-        Toast.makeText(tokenRequest.context, "Your bank requires additional verification", Toast.LENGTH_LONG).show();
+        if (tokenRequest.isActivityLive()) {
+            Context context = tokenRequest.activityWeakReference.get();
+            Toast.makeText(context, "Your bank requires additional verification", Toast.LENGTH_LONG).show();
 
-        Call<TokenVerification> call = startApi.getTokenVerification(token.getId());
+            Call<TokenVerification> call = startApi.getTokenVerification(token.getId());
 
-        String url = String.format(Locale.US, "%stokens/%s/verification/verify", StartApiFactory.BASE_URL, token.getId());
-        Dialog verificationDialog = showVerificationDialog(tokenRequest, url, new VerificationDialogCancelListener(call, tokenRequest));
+            String url = String.format(Locale.US, "%stokens/%s/verification/verify", StartApiFactory.BASE_URL, token.getId());
+            Dialog verificationDialog = showVerificationDialog(context, url, new VerificationDialogDismissListener(call, tokenRequest));
 
-        CheckTokenVerificationCallback verificationCallback = new CheckTokenVerificationCallback(tokenRequest, token, verificationDialog);
-        enqueueWithCondition(call, verificationCallback, new VerificationStatusRetryCondition(), RETRY_DELAY_MS);
+            CheckTokenVerificationCallback verificationCallback = new CheckTokenVerificationCallback(tokenRequest, token, verificationDialog);
+            enqueueWithCondition(call, verificationCallback, new VerificationStatusRetryCondition(), RETRY_DELAY_MS);
+        }
     }
 
-    private Dialog showVerificationDialog(TokenRequest tokenRequest, String url, DialogInterface.OnCancelListener onCancelListener) {
-        LayoutInflater layoutInflater = LayoutInflater.from(tokenRequest.context);
+    private Dialog showVerificationDialog(Context context, String url, VerificationDialogDismissListener onDialogListener) {
+        LayoutInflater layoutInflater = LayoutInflater.from(context);
         View view = layoutInflater.inflate(R.layout.web_dialog, null);
-        DisplayMetrics displayMetrics = tokenRequest.context.getResources().getDisplayMetrics();
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         view.setMinimumHeight((int) (displayMetrics.heightPixels * WEB_VIEW_SCREEN_PERCENTS));
         view.setMinimumWidth((int) (displayMetrics.widthPixels * WEB_VIEW_SCREEN_PERCENTS));
 
@@ -120,10 +125,13 @@ public class Start {
         webView.getSettings().setJavaScriptEnabled(true);
         webView.loadUrl(url);
 
-        Dialog dialog = new AlertDialog.Builder(tokenRequest.context)
+        AlertDialog.Builder builder = new AlertDialog.Builder(context)
                 .setView(view)
-                .setOnCancelListener(onCancelListener)
-                .create();
+                .setOnCancelListener(onDialogListener);
+        if (Build.VERSION.SDK_INT >= 17) {
+            builder.setOnDismissListener(onDialogListener);
+        }
+        Dialog dialog = builder.create();
         dialog.show();
 
         return dialog;
@@ -216,35 +224,48 @@ public class Start {
         }
     }
 
-    private final class VerificationDialogCancelListener implements DialogInterface.OnCancelListener {
+    private final class VerificationDialogDismissListener implements DialogInterface.OnDismissListener, DialogInterface.OnCancelListener {
 
         private final Call<TokenVerification> call;
         private final TokenRequest tokenRequest;
 
-        private VerificationDialogCancelListener(Call<TokenVerification> call, TokenRequest tokenRequest) {
+        private VerificationDialogDismissListener(Call<TokenVerification> call, TokenRequest tokenRequest) {
             this.call = call;
             this.tokenRequest = tokenRequest;
         }
 
         @Override
         public void onCancel(DialogInterface dialogInterface) {
-            call.cancel();
+            if (!call.isCanceled()) {
+                call.cancel();
+            }
             tokenRequest.tokenCallback.onCancel();
+        }
+
+        @Override
+        public void onDismiss(DialogInterface dialogInterface) {
+            if (!call.isCanceled()) {
+                call.cancel();
+            }
         }
     }
 
     private static final class TokenRequest {
 
-        private final Context context;
+        private final WeakReference<Activity> activityWeakReference;
         private final TokenCallback tokenCallback;
         private final Integer amountInCents;
         private final String currency;
 
-        private TokenRequest(Context context, TokenCallback tokenCallback, Integer amountInCents, String currency) {
-            this.context = context;
+        private TokenRequest(Activity activity, TokenCallback tokenCallback, Integer amountInCents, String currency) {
+            this.activityWeakReference = new WeakReference<>(activity);
             this.tokenCallback = tokenCallback;
             this.amountInCents = amountInCents;
             this.currency = currency;
+        }
+
+        private boolean isActivityLive() {
+            return activityWeakReference.get() != null && !activityWeakReference.get().isFinishing();
         }
     }
 }
