@@ -162,23 +162,43 @@ public class Card {
      */
     public enum Brand {
 
-        VISA("^4[0-9]{12}(?:[0-9]{3})?$"),
-        MASTER_CARD("^5[1-5][0-9]{14}$"),
-        UNKNOWN(null);
+        VISA(new int[]{13, 16}, "4"),
+        MASTER_CARD(new int[]{16}, "50", "51", "52", "53", "54", "55", "2221", "2222", "2223", "2224", "2225", "2226", "2227", "2228", "2229", "223", "224", "225", "226", "227", "228", "229", "23", "24", "25", "26", "271", "2720"),
+        UNKNOWN(new int[0]);
 
-        private final Pattern pattern;
+        private final String[] prefixes;
+        private final int[] length;
 
-        Brand(String pattern) {
-            this.pattern = pattern == null ? null : Pattern.compile(pattern);
+        Brand(int[] length, String... prefixes) {
+            this.length = length;
+            this.prefixes = prefixes;
         }
 
         public static Brand detect(String number) {
             for (Brand brand : values()) {
-                if (brand.pattern != null && brand.pattern.matcher(number).matches()) {
+                if (hasPrefix(number, brand.prefixes) && hasLength(number, brand.length)) {
                     return brand;
                 }
             }
             return UNKNOWN;
+        }
+
+        private static boolean hasPrefix(String number, String[] prefixes) {
+            for (String prefix : prefixes) {
+                if (number.startsWith(prefix)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static boolean hasLength(String number, int[] lengthList) {
+            for (int length : lengthList) {
+                if (number.length() == length) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }
