@@ -8,5 +8,5 @@
     <string name="hint_card_owner">Cardholder name</string>
     <string name="pay">Pay!</string>
     <string name="edit_text_invalid">Invalid field</string>
-    <string name="congrats">Your token us %s. You can send this token to your application server.</string>
+    <string name="congrats">Your token is %s. You can send this token to your application server.</string>
 </resources>
