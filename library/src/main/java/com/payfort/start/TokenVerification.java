@@ -15,4 +15,13 @@ public class TokenVerification {
     public boolean isFinalized() {
         return finalized;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TokenVerification{");
+        sb.append("enrolled=").append(enrolled);
+        sb.append(", finalized=").append(finalized);
+        sb.append('}');
+        return sb.toString();
+    }
 }

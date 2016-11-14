@@ -91,10 +91,11 @@ public class Start {
     }
 
     private void onTokenVerificationCreated(TokenRequest tokenRequest, TokenVerification tokenVerification, Token token) {
+        Token tokenWithVerification = new Token(token, tokenVerification);
         if (tokenVerification.isEnrolled()) {
-            verifyTokenInBrowser(tokenRequest, token);
+            verifyTokenInBrowser(tokenRequest, tokenWithVerification);
         } else {
-            tokenRequest.tokenCallback.onSuccess(token);
+            tokenRequest.tokenCallback.onSuccess(tokenWithVerification);
         }
     }
 
@@ -207,7 +208,7 @@ public class Start {
             checkState(response.body().isFinalized(), "Token is not finalized!");
 
             verificationDialog.dismiss();
-            tokenRequest.tokenCallback.onSuccess(token);
+            tokenRequest.tokenCallback.onSuccess(new Token(token, response.body()));
         }
 
         @Override
