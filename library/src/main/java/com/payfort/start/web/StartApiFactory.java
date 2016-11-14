@@ -8,8 +8,16 @@ import com.google.gson.GsonBuilder;
 import com.payfort.start.BuildConfig;
 
 import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 
 import okhttp3.ConnectionSpec;
 import okhttp3.Credentials;
@@ -61,7 +69,21 @@ public class StartApiFactory {
                     .build();
             clientBuilder.connectionSpecs(Collections.singletonList(connectionSpec));
         } else {
-            clientBuilder.sslSocketFactory(new TLSSocketFactory());
+            clientBuilder.sslSocketFactory(new TLSSocketFactory(), getTrustManager());
+        }
+    }
+
+    private static X509TrustManager getTrustManager() {
+        try {
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init((KeyStore) null);
+            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+            if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
+                throw new IllegalStateException("Unexpected default trust managers:" + Arrays.toString(trustManagers));
+            }
+            return (X509TrustManager) trustManagers[0];
+        } catch (NoSuchAlgorithmException | KeyStoreException e) {
+            throw new IllegalStateException("Error creating TrustManager", e);
         }
     }
 
