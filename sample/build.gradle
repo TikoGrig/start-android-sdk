@@ -1,24 +1,28 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.0'
+    compileSdkVersion 23
+    buildToolsVersion '23.0.3'
     defaultConfig {
         applicationId 'com.payfort.start.sample'
         minSdkVersion 16
-        targetSdkVersion 25
+        targetSdkVersion 23
         versionCode 1
         versionName '0.1'
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
     }
 }
 
+tasks.withType(Test) {
+    testLogging {
+        events "started", "passed", "skipped", "failed"
+    }
+}
+
 dependencies {
     compile project(':library')
-    compile 'com.android.support:appcompat-v7:25.0.0'
+    compile 'com.android.support:appcompat-v7:23.1.1'
 
     androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
-    testCompile ('com.android.support.test:runner:0.5') {
-        exclude group: 'com.android.support', module: 'support-annotations' // conflict: requires old 23.1.1
-    }
+    testCompile 'com.android.support.test:runner:0.5'
 }

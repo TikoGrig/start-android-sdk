@@ -11,11 +11,11 @@ apply plugin: 'com.android.library'
 apply plugin: 'bintray-release'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.0'
+    compileSdkVersion 23
+    buildToolsVersion '23.0.3'
     defaultConfig {
         minSdkVersion 16    // TLS 1.2 is supported in android 4.1+
-        targetSdkVersion 25
+        targetSdkVersion 23
         versionCode 1
         versionName '0.1'
     }
@@ -26,6 +26,10 @@ android {
         release {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
     }
 }
 
