@@ -9,6 +9,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.payfort.start.Card;
@@ -32,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements TokenCallback {
     private EditText cvcEditText;
     private EditText ownerEditText;
     private ProgressBar progressBar;
+    private TextView errorTextView;
     private Button payButton;
     Start start = new Start(API_OPEN_KEY);
 
@@ -46,15 +48,19 @@ public class MainActivity extends AppCompatActivity implements TokenCallback {
         cvcEditText = (EditText) findViewById(R.id.cvcEditText);
         ownerEditText = (EditText) findViewById(R.id.ownerEditText);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        errorTextView = (TextView) findViewById(R.id.errorTextView);
         payButton = (Button) findViewById(R.id.payButton);
     }
 
     public void pay(View view) {
         try {
             Card card = unbindCard();
-            start.createToken(this, card, this, 10 * 100, "USD");
-            showProgress(true);
+
+            errorTextView.setText(null);
             hideKeyboard();
+            showProgress(true);
+
+            start.createToken(this, card, this, 10 * 100, "USD");
         } catch (CardVerificationException e) {
             setErrors(e.getErrorFields());
         }
@@ -121,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements TokenCallback {
 
     private void showProgress(boolean progressVisible) {
         payButton.setEnabled(!progressVisible);
-        progressBar.setVisibility(progressVisible ? View.VISIBLE : View.INVISIBLE);
+        progressBar.setVisibility(progressVisible ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -134,6 +140,7 @@ public class MainActivity extends AppCompatActivity implements TokenCallback {
     @Override
     public void onError(StartApiException e) {
         Log.e(LOG_TAG, "Error getting token", e);
+        errorTextView.setText(R.string.error);
         showProgress(false);
     }
 

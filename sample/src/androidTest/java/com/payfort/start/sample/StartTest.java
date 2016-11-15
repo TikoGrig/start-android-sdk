@@ -6,6 +6,7 @@ import android.support.test.runner.AndroidJUnit4;
 
 import com.payfort.start.Card;
 import com.payfort.start.Start;
+import com.payfort.start.TestStartFactory;
 import com.payfort.start.Token;
 import com.payfort.start.TokenVerification;
 import com.payfort.start.sample.support.WaitForResultTokenCallback;
@@ -22,6 +23,7 @@ import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static com.payfort.start.sample.support.ViewMatchersExt.startsWithText;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
@@ -73,9 +75,8 @@ public class StartTest {
 
     @Test
     public void testGetTokenVerificationRequiredSubmitForm() throws Exception {
-        Start start = new Start(LIVE_OPEN_KEY);
         MainActivity mainActivity = activityRule.getActivity();
-        mainActivity.start = start;
+        mainActivity.start = new Start(LIVE_OPEN_KEY);
 
         fillCard("4111 1111 1111 1111", "12", "2020", "111", "John Doe");
         closeSoftKeyboard();
@@ -102,9 +103,8 @@ public class StartTest {
 
     @Test
     public void testGetTokenVerificationNotEnrolledSubmitForm() throws Exception {
-        Start start = new Start(LIVE_OPEN_KEY);
         MainActivity mainActivity = activityRule.getActivity();
-        mainActivity.start = start;
+        mainActivity.start = new Start(LIVE_OPEN_KEY);
 
         fillCard("4005550000000001", "12", "2020", "111", "John Doe");
         closeSoftKeyboard();
@@ -132,14 +132,57 @@ public class StartTest {
 
     @Test
     public void testGetTokenVerifyInWebViewSubmitForm() throws Exception {
-        Start start = new Start(LIVE_OPEN_KEY);
         MainActivity mainActivity = activityRule.getActivity();
-        mainActivity.start = start;
+        mainActivity.start = new Start(LIVE_OPEN_KEY);
 
         fillCard("5453010000064154", "12", "2020", "111", "John Doe");
         closeSoftKeyboard();
         onView(withId(R.id.payButton)).perform(click());
         checkToastAppears("Your token is ");
+    }
+
+    @Test
+    public void testGetTokenOffline() throws Exception {
+        Start start = TestStartFactory.newOfflineStart();
+        WaitForResultTokenCallback callback = new WaitForResultTokenCallback();
+        start.createToken(activityRule.getActivity(), new Card("5453010000064154", "111", 12, 2020, "John Doe"), callback, 100, "USD");
+        callback.waitForResult();
+
+        assertNull(callback.getToken());
+        assertNotNull(callback.getError());
+    }
+
+    @Test
+    public void testGetTokenOfflineSubmitForm() throws Exception {
+        MainActivity mainActivity = activityRule.getActivity();
+        mainActivity.start = TestStartFactory.newOfflineStart();
+        fillCard("4111 1111 1111 1111", "12", "2020", "111", "John Doe");
+        closeSoftKeyboard();
+        onView(withId(R.id.payButton)).perform(click());
+
+        onView(withId(R.id.errorTextView)).check(matches(withText("Error getting token…")));
+    }
+
+    @Test
+    public void testGetTokenWithServerError() throws Exception {
+        Start start = TestStartFactory.new400ErrorsStart();
+        WaitForResultTokenCallback callback = new WaitForResultTokenCallback();
+        start.createToken(activityRule.getActivity(), new Card("5453010000064154", "111", 12, 2020, "John Doe"), callback, 100, "USD");
+        callback.waitForResult();
+
+        assertNull(callback.getToken());
+        assertNotNull(callback.getError());
+    }
+
+    @Test
+    public void testGetTokenWithServerErrorSubmitForm() throws Exception {
+        MainActivity mainActivity = activityRule.getActivity();
+        mainActivity.start = TestStartFactory.new400ErrorsStart();
+        fillCard("4111 1111 1111 1111", "12", "2020", "111", "John Doe");
+        closeSoftKeyboard();
+        onView(withId(R.id.payButton)).perform(click());
+
+        onView(withId(R.id.errorTextView)).check(matches(withText("Error getting token…")));
     }
 
     private void checkToastAppears(String textPrefix) {

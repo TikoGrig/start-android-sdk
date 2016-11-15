@@ -55,6 +55,10 @@ public class Start {
         this.startApi = StartApiFactory.newStartApi(apiKey);
     }
 
+    Start(StartApi startApi) {
+        this.startApi = checkNotNull(startApi);
+    }
+
     /**
      * Creates token asynchronously. Result will be returned via {@link TokenCallback} passed to arguments.
      *

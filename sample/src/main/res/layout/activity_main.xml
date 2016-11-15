@@ -85,7 +85,15 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="16dp"
-                android:visibility="invisible" />
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/errorTextView"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginLeft="16dp"
+                android:gravity="center_vertical"
+                android:textColor="#F00" />
 
         </LinearLayout>
 
