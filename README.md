@@ -1,4 +1,4 @@
-## Start Mobile SDK
+## Start Mobile SDK [![Build Status](https://api.travis-ci.org/payfort/start-android-sdk.svg?branch=master)](https://travis-ci.org/payfort/start-android-sdk/) [ ![Download](https://api.bintray.com/packages/payfort/payfort/start/images/download.svg) ](https://bintray.com/payfort/payfort/start/_latestVersion)
 Start is a payment gateway for Startups
 
 ## Intro
@@ -9,7 +9,7 @@ Sometimes, during the payment process an additional 3D Secure verification may b
 ## Installation
 Before you start you have to sign up for a Start account [here](https://dashboard.start.payfort.com/#/public/sign_up?secretLink=true). This [instruction](https://docs.start.payfort.com/guides/api_keys/#how-to-get-api-keys) tells how to get API keys for SDK.
 
-Download [the latest AAR](https://bintray.com/payfort/payfort/start) or grab via Maven:
+Download [the latest AAR](https://bintray.com/payfort/payfort/start/_latestVersion) or grab via Maven:
 ```xml
 <dependency>
   <groupId>com.payfort</groupId>
