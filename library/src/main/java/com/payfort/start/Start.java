@@ -102,7 +102,7 @@ public class Start {
     private void verifyTokenInBrowser(TokenRequest tokenRequest, Token token) {
         if (tokenRequest.isActivityLive()) {
             Context context = tokenRequest.activityWeakReference.get();
-            Toast.makeText(context, "Your bank requires additional verification", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, R.string.web_view_validation_alert, Toast.LENGTH_LONG).show();
 
             Call<TokenVerification> call = startApi.getTokenVerification(token.getId());
 

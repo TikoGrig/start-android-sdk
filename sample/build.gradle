@@ -9,11 +9,16 @@ android {
         targetSdkVersion 25
         versionCode 1
         versionName '0.1'
+        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
     }
 }
 
 dependencies {
-//    compile project(':library')
-    compile 'com.payfort:start:0.1'
+    compile project(':library')
     compile 'com.android.support:appcompat-v7:25.0.0'
+
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
+    testCompile ('com.android.support.test:runner:0.5') {
+        exclude group: 'com.android.support', module: 'support-annotations' // conflict: requires old 23.1.1
+    }
 }

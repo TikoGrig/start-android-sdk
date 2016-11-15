@@ -23,7 +23,7 @@ import java.util.EnumSet;
 public class MainActivity extends AppCompatActivity implements TokenCallback {
 
     // TODO: put your open Payfort key here
-    private static final String API_OPEN_KEY = "test_open_k_84493c9cebc499dfa6ac";
+    private static final String API_OPEN_KEY = "live_open_k_55e06cde7fe8d3141a7e";
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     private EditText numberEditText;
@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements TokenCallback {
     private EditText ownerEditText;
     private ProgressBar progressBar;
     private Button payButton;
-    private Start start;
+    Start start = new Start(API_OPEN_KEY);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +47,6 @@ public class MainActivity extends AppCompatActivity implements TokenCallback {
         ownerEditText = (EditText) findViewById(R.id.ownerEditText);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         payButton = (Button) findViewById(R.id.payButton);
-
-        this.start = new Start(API_OPEN_KEY);
     }
 
     public void pay(View view) {
@@ -128,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements TokenCallback {
 
     @Override
     public void onSuccess(Token token) {
-        Log.d(LOG_TAG, "Token is received: " + token.getId());
+        Log.d(LOG_TAG, "Token is received: " + token);
         Toast.makeText(this, getString(R.string.congrats, token.getId()), Toast.LENGTH_LONG).show();
         showProgress(false);
     }
