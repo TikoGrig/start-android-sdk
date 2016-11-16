@@ -42,11 +42,11 @@ public class StartTest {
         Assert.fail();
     }
 
-//    @Test(expected = IllegalArgumentException.class)
-//    public void testCurrencyNotZero() throws Exception {
-//        start.createToken(activity, new Card("4111111111111111", "111", 12, 2020, "John Doe"), new EmptyTokenCallback(), 0, "USD");
-//        Assert.fail();
-//    }
+    @Test(expected = IllegalArgumentException.class)
+    public void testCurrencyNotZero() throws Exception {
+        start.createToken(activity, new Card("4111111111111111", "111", 12, 2020, "John Doe"), new EmptyTokenCallback(), 0, "USD");
+        Assert.fail();
+    }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCurrencyNotNegative() throws Exception {
