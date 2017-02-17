@@ -26,7 +26,7 @@ public class StartApiTest {
     public void testCreateNewTokenVerificationNotRequired() throws Exception {
         StartApi startApi = StartApiFactory.newStartApi(TEST_OPEN_KEY);
 
-        Call<Token> tokenCall = startApi.createToken("4111 1111 1111 1111", "123", 11, 2016, "John Doe");
+        Call<Token> tokenCall = startApi.createToken("4111 1111 1111 1111", "123", 11, 2019, "John Doe");
         WaitForResultWebCallback<Token> getTokenCallback = new WaitForResultWebCallback<>();
         tokenCall.enqueue(getTokenCallback);
         assertTrue(getTokenCallback.waitForResult());
@@ -41,7 +41,7 @@ public class StartApiTest {
     public void testCreateNewTokenVerificationRequired() throws Exception {
         StartApi startApi = StartApiFactory.newStartApi(LIVE_OPEN_KEY);
 
-        Call<Token> tokenCall = startApi.createToken("4111 1111 1111 1111", "123", 11, 2016, "John Doe");
+        Call<Token> tokenCall = startApi.createToken("4111 1111 1111 1111", "123", 11, 2019, "John Doe");
         WaitForResultWebCallback<Token> getTokenCallback = new WaitForResultWebCallback<>();
         tokenCall.enqueue(getTokenCallback);
         assertTrue(getTokenCallback.waitForResult());
@@ -55,7 +55,7 @@ public class StartApiTest {
     @Test
     public void testGetTokenVerificationNotEnrolled() throws Exception {
         StartApi startApi = StartApiFactory.newStartApi(LIVE_OPEN_KEY);
-        Call<Token> tokenCall = startApi.createToken("4005550000000001", "123", 11, 2016, "John Doe");
+        Call<Token> tokenCall = startApi.createToken("4005550000000001", "123", 11, 2019, "John Doe");
         WaitForResultWebCallback<Token> getTokenCallback = new WaitForResultWebCallback<>();
         tokenCall.enqueue(getTokenCallback);
         assertTrue(getTokenCallback.waitForResult());
@@ -77,7 +77,7 @@ public class StartApiTest {
     @Test
     public void testGetTokenVerificationEnrolled() throws Exception {
         StartApi startApi = StartApiFactory.newStartApi(LIVE_OPEN_KEY);
-        Call<Token> tokenCall = startApi.createToken("5453010000064154", "123", 11, 2016, "John Doe");
+        Call<Token> tokenCall = startApi.createToken("5453010000064154", "123", 11, 2019, "John Doe");
         WaitForResultWebCallback<Token> getTokenCallback = new WaitForResultWebCallback<>();
         tokenCall.enqueue(getTokenCallback);
         assertTrue(getTokenCallback.waitForResult());
