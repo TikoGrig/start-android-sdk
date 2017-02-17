@@ -39,7 +39,7 @@ dependencies {
 }
 
 publish {
-    userOrg = 'payfort'
+    userOrg = 'pavel-gabriel'
     repoName= 'payfort'
     groupId = 'com.payfort'
     artifactId = 'start'
