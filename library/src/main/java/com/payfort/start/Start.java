@@ -128,6 +128,7 @@ public class Start {
         WebView webView = (WebView) view.findViewById(R.id.webView);
         webView.setWebViewClient(new WebViewClient());
         webView.getSettings().setJavaScriptEnabled(true);
+        webView.requestFocus(View.FOCUS_DOWN);
         webView.loadUrl(url);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context)
